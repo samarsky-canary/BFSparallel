@@ -16,7 +16,7 @@ namespace DefaultNamespace
             using (var file = new StreamReader(filename))
             {
                 var n = Convert.ToInt32(file.ReadLine());
-                InitDist(n);
+                InitNodes(n);
                 string line;
                 while ((line = file.ReadLine()) != null)
                 {
@@ -28,6 +28,16 @@ namespace DefaultNamespace
             }
         }
 
+        public int GetMaxVertex()
+        {
+            return Nodes.Count;
+        }
+        public string GraphSizeInfo()
+        {
+            var vertexes = Nodes.Count;
+            var edges = Nodes.Sum(node => node.Count);
+            return $"{vertexes} {edges}";
+        }
         public override string ToString()
         {
             var response = "";
@@ -40,7 +50,7 @@ namespace DefaultNamespace
             return response;
         }
 
-        private void InitDist(int n)
+        private void InitNodes(int n)
         {
             Nodes = new List<List<int>>();
             for (int i = 0; i < n; i++)
@@ -48,7 +58,7 @@ namespace DefaultNamespace
         }
 
 
-        public int Serial(int vertex)
+        public void Serial(int vertex)
         {
             var queue = new Queue<int>();
             var visited = new List<bool>();
@@ -67,9 +77,36 @@ namespace DefaultNamespace
                         queue.Enqueue(neighb);
                 }
             }
-
-            return visited.Count(b => b);
         }
+
+        public List<int> SerialCheck(int vertex)
+        {
+            var queue = new Queue<int>();
+            var visited = new List<bool>();
+            for (int i = 0; i < Nodes.Count; i++)
+                visited.Add(false);
+
+            queue.Enqueue(vertex);
+
+            while (queue.Count != 0)
+            {
+                var v = queue.Dequeue();
+                visited[v] = true;
+                foreach (var neighb in Nodes[v])
+                {
+                    if (!visited[neighb])
+                        queue.Enqueue(neighb);
+                }
+            }
+            var result = new List<int>();
+            for (var i = 0; i < visited.Count; i++)
+            {
+                if (visited[i])
+                    result.Add(i);
+            }
+            return result;
+        }
+        
 
         public void Leveled(int initial_vertex)
         {
@@ -82,20 +119,15 @@ namespace DefaultNamespace
             // set level to zero
             var level = 0;
 
-            var this_node = new List<int>();
-            this_node.Add(initial_vertex);
-            var buffer = new List<int>();
+            var this_level = new List<int>();
+            this_level.Add(initial_vertex);
+            var next_level = new List<int>();
 
-            while (this_node.Count != 0)
+            while (this_level.Count != 0)
             {
-                // foreach (var node in this_node)
-                // {
-                //     Console.Write($"{node} ");
-                // }
-                // Console.Write(Environment.NewLine);
-                Parallel.For(0, this_node.Count, node =>
+                Parallel.For(0, this_level.Count, node =>
                 {
-                    var vert = this_node[node];
+                    var vert = this_level[node];
                     // если вершина текущего уровня
                     if (dist[vert] == level)
                     {
@@ -106,15 +138,17 @@ namespace DefaultNamespace
                                 lock ("neighbor")
                                 {
                                     dist[neighbor] = level + 1; 
-                                    buffer.Add(neighbor);
+                                    next_level.Add(neighbor);
                                 }
                         }
                     }
                 });
-                this_node = buffer;
-                buffer = new List<int>();
+                this_level = next_level;
+                next_level = new List<int>();
                 level++;
             }
+            // var result = dist.Count(i => i >= 0);
+            // Console.WriteLine(result);
         }
         
         public List<int> LeveledCheck(int initial_vertex)
@@ -128,8 +162,8 @@ namespace DefaultNamespace
             // set level to zero
             var level = 0;
 
-            var this_node = new List<int>();
-            this_node.Add(initial_vertex);
+            var this_level = new List<int>();
+            this_level.Add(initial_vertex);
             var buffer = new List<int>();
             
             
@@ -137,33 +171,35 @@ namespace DefaultNamespace
             var result = new List<int>();
             result.Add(initial_vertex);
             
-            while (this_node.Count != 0)
+            while (this_level.Count != 0)
             {
-                Parallel.For(0, this_node.Count, node =>
+                Parallel.For(0, this_level.Count, node =>
                 {
-                    var vert = this_node[node];
+                    var vert = this_level[node];
                     // если вершина текущего уровня
                     if (dist[vert] == level)
                     {
                         foreach (var neighbor in Nodes[vert])
                         {
                             // всех непосещенных соседей помечаем
-                            if (dist[neighbor] == -1)
                                 lock ("neighbor")
                                 {
-                                    dist[neighbor] = level + 1; 
-                                    buffer.Add(neighbor);
+                                    if (dist[neighbor] == -1)
+                                    {
+                                        dist[neighbor] = level + 1; 
+                                        buffer.Add(neighbor);   
+                                    }
                                 }
                         }
                     }
                 });
-                this_node = buffer;
+                this_level = buffer;
                 result.AddRange(buffer);
                 buffer = new List<int>();
                 level++;
             }
 
-            return result.Distinct().ToList();
+            return result;
         }
         
     }
