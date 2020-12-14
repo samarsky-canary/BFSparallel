@@ -77,6 +77,12 @@ namespace DefaultNamespace
                         queue.Enqueue(neighb);
                 }
             }
+
+            // for (var i = 0; i < Nodes.Count; i++)
+            // {
+            //     if (visited[i] == false)
+            //         Console.WriteLine(i);
+            // }
         }
 
         public List<int> SerialCheck(int vertex)
@@ -147,6 +153,7 @@ namespace DefaultNamespace
                 next_level = new List<int>();
                 level++;
             }
+
             // var result = dist.Count(i => i >= 0);
             // Console.WriteLine(result);
         }
