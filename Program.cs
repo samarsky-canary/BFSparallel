@@ -109,13 +109,19 @@ namespace bfs_parallel
             int start_point;
             try
             {
-                filename = args.Length != 0 ? args[0] : "1.edges";
+                filename = args.Length != 0 ? args[0] : "0.edges";
                 start_point = args.Length >= 1 ? Convert.ToInt32(args[1]) : 0;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 Console.WriteLine("give correct args [0] - filename [1]- correct index");
+                using (StreamWriter rw = File.AppendText("log.txt"))
+                {
+                    var logmessage = "Error occured\n";
+                    logmessage += $"{e.Message}";
+                    Log(logmessage, rw);    
+                }
                 throw;
             }
 
@@ -128,6 +134,12 @@ namespace bfs_parallel
             {
                 Console.WriteLine(e);
                 Console.WriteLine("check max vertex index and edges. each vertex should be < maxVertexIndex");
+                using (StreamWriter rw = File.AppendText("log.txt"))
+                {
+                    var logmessage = "Cannot detect file\n";
+                    logmessage += $"{e.Message}";
+                    Log(logmessage, rw);    
+                }
                 throw;
             }
             var graphParams = graph.GraphSizeInfo().Split();
@@ -135,12 +147,6 @@ namespace bfs_parallel
                           $"Edges: {graphParams[1]}\n");
 
             MeasureTest(graph, start_point);
-
-            Console.WriteLine(StandMeasureTimeDiffer(graph.Serial, graph.Leveled, start_point));
-            Console.WriteLine(StandMeasureTimeDiffer(graph.Serial, graph.Leveled, start_point));
-            Console.WriteLine(StandMeasureTimeDiffer(graph.Serial, graph.Leveled, start_point));
-            Console.WriteLine(StandMeasureTimeDiffer(graph.Serial, graph.Leveled, start_point));
-            Console.WriteLine(StandMeasureTimeDiffer(graph.Serial, graph.Leveled, start_point));
         }
 
         private static void MeasureTest(MergeList graph, int start_point)
