@@ -133,20 +133,18 @@ namespace DefaultNamespace
                 Parallel.For(0, this_level.Count, node =>
                 {
                     var vert = this_level[node];
-                    // если вершина текущего уровня
-                    //if (dist[vert] == level)
-                    //{
+
                     foreach (var neighbor in Nodes[vert])
                     {
                         // всех непосещенных соседей помечаем
-                        if (dist[neighbor] == -1)
-                            lock ("neighbor")
-                            {
-                                dist[neighbor] = level + 1; 
-                                next_level.Add(neighbor);
-                            }
+                        lock ("neighbor")
+                        {
+                            if (dist[neighbor] != -1)
+                                continue;
+                            dist[neighbor] = level + 1; 
+                            next_level.Add(neighbor);
+                        }
                     }
-                    //}
                 });
                 this_level = next_level;
                 next_level = new List<int>();
@@ -183,19 +181,15 @@ namespace DefaultNamespace
                 {
                     var vert = this_level[node];
                     // если вершина текущего уровня
-                    if (dist[vert] == level)
+                    foreach (var neighbor in Nodes[vert])
                     {
-                        foreach (var neighbor in Nodes[vert])
+                        // всех непосещенных соседей помечаем
+                        lock ("neighbor")
                         {
-                            // всех непосещенных соседей помечаем
-                                lock ("neighbor")
-                                {
-                                    if (dist[neighbor] == -1)
-                                    {
-                                        dist[neighbor] = level + 1; 
-                                        buffer.Add(neighbor);   
-                                    }
-                                }
+                            if (dist[neighbor] != -1)
+                                continue;
+                            dist[neighbor] = level + 1; 
+                            buffer.Add(neighbor);   
                         }
                     }
                 });
