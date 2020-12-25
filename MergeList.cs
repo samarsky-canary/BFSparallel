@@ -125,8 +125,7 @@ namespace DefaultNamespace
             // set level to zero
             var level = 0;
 
-            var this_level = new List<int>();
-            this_level.Add(initial_vertex);
+            var this_level = new List<int>{initial_vertex};
             var next_level = new List<int>();
 
             while (this_level.Count != 0)
@@ -134,18 +133,16 @@ namespace DefaultNamespace
                 Parallel.For(0, this_level.Count, node =>
                 {
                     var vert = this_level[node];
-                    // если вершина текущего уровня
-                    if (dist[vert] == level)
+
+                    foreach (var neighbor in Nodes[vert])
                     {
-                        foreach (var neighbor in Nodes[vert])
+                        // всех непосещенных соседей помечаем
+                        lock ("neighbor")
                         {
-                            // всех непосещенных соседей помечаем
-                            if (dist[neighbor] == -1)
-                                lock ("neighbor")
-                                {
-                                    dist[neighbor] = level + 1; 
-                                    next_level.Add(neighbor);
-                                }
+                            if (dist[neighbor] != -1)
+                                continue;
+                            dist[neighbor] = level + 1; 
+                            next_level.Add(neighbor);
                         }
                     }
                 });
@@ -184,19 +181,15 @@ namespace DefaultNamespace
                 {
                     var vert = this_level[node];
                     // если вершина текущего уровня
-                    if (dist[vert] == level)
+                    foreach (var neighbor in Nodes[vert])
                     {
-                        foreach (var neighbor in Nodes[vert])
+                        // всех непосещенных соседей помечаем
+                        lock ("neighbor")
                         {
-                            // всех непосещенных соседей помечаем
-                                lock ("neighbor")
-                                {
-                                    if (dist[neighbor] == -1)
-                                    {
-                                        dist[neighbor] = level + 1; 
-                                        buffer.Add(neighbor);   
-                                    }
-                                }
+                            if (dist[neighbor] != -1)
+                                continue;
+                            dist[neighbor] = level + 1; 
+                            buffer.Add(neighbor);   
                         }
                     }
                 });
